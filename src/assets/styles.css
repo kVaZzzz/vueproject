@@ -1,0 +1,93 @@
+/* src/assets/styles.css */
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f4f8;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3, h4 {
+    color: #333;
+}
+
+a {
+    text-decoration: none;
+}
+
+nav {
+    background-color: #007bff;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+nav a {
+    color: white;
+    margin-right: 15px;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+.card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для курсов */
+.courses-section {
+    margin-top: 30px;
+}
+
+.courses-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.course-card {
+    flex-basis: calc(33.333% - 20px);
+    padding: 15px;
+}
+
+/* Стили для списка преимуществ */
+.benefits-list {
+    list-style-type: none;
+}
+
+/* Общие стили для форм */
+form {
+    display: flex;
+    flex-direction: column;
+}
+input, textarea, select {
+    margin-bottom: 10px;
+}
+input, textarea {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
