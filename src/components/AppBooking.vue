@@ -4,39 +4,35 @@
     <form @submit.prevent="handleBooking">
       <select v-model="selectedCourse">
         <option disabled value="">Выберите курс</option>
-        <option v-for="course in courses" :key="course.id">{{ course.title }}</option>
+        <option v-for="(course, key) in courses" :key="key" :value="key">{{ course }}</option>
       </select>
 
       <input type="date" v-model="startDate" required />
-
       <button type="submit">Записаться на курс</button>
     </form>
 
-    <div v-if="isBooked">
-      <h3>Оплата курса:</h3>
-      <button @click="handlePayment">Оплатить курс</button>
+    <div v-if="successMessage" class="success-message">
+      {{ successMessage }}
     </div>
   </div>
 </template>
 
 <script>
-import { getDatabase, ref, onValue } from 'firebase/database';
+import { getDatabase, ref, set } from 'firebase/database';
+import { database } from "@/main.js";
 
 export default {
   data() {
     return {
       selectedCourse: '',
       startDate: '',
-      isBooked: false,
-      courses: [],
+      successMessage: '',
+      courses: {
+        1: 'Категория В',
+        2: 'Категория С'
+      },
+      currentUserId: 'user123',
     };
-  },
-  created() {
-    const db = getDatabase();
-    const coursesRef = ref(db, 'courses/');
-    onValue(coursesRef, (snapshot) => {
-      this.courses = snapshot.val() || [];
-    });
   },
   methods: {
     handleBooking() {
@@ -45,12 +41,31 @@ export default {
         return;
       }
 
-      this.isBooked = true;
-      alert(`Вы записаны на курс ${this.selectedCourse} с датой начала ${this.startDate}`);
+      const bookingData = {
+        userId: this.currentUserId,
+        course: this.courses[this.selectedCourse],
+        startDate: this.startDate,
+      };
+
+      // Получаем ссылку на базу данных
+      const firebaseRef = ref(database, 'booking/' + Date.now());
+
+      // Записываем данные в Firebase
+      set(firebaseRef, bookingData)
+        .then(() => {
+          this.successMessage = `Вы успешно записаны на курс "${bookingData.course}" с датой начала ${bookingData.startDate}.`;
+          // Сбрасываем форму после успешной записи
+          this.selectedCourse = '';
+          this.startDate = '';
+
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 5000);
+        })
+        .catch((error) => {
+          console.error('Ошибка записи в Firebase:', error);
+        });
     },
-    handlePayment() {
-      alert('Оплата прошла успешно!');
-    }
   }
 };
 </script>
@@ -70,7 +85,8 @@ select, input {
 button {
   margin-top: .5rem;
 }
-.booking h3 {
-  margin-top: .5rem;
+.success-message {
+  margin-top: 1rem;
+  color: green;
 }
 </style>

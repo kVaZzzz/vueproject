@@ -5,8 +5,8 @@
       <nav>
         <router-link to="/auth"  v-if="!isAuth">Авторизация</router-link>
         <router-link to="/courses">Курсы</router-link>
-        <router-link to="/booking">Запись на курсы</router-link>
-        <router-link to="/dashboard">Личный кабинет</router-link>
+        <router-link to="/booking">Запись на занятия</router-link>
+        <router-link to="/dashboard" v-if="isAuth">Личный кабинет</router-link>
         <router-link to="/reviews">Отзывы</router-link>
         <router-link to="/contact">Контакты</router-link>
         <router-link to="/news">Новости</router-link>

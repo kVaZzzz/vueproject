@@ -1,68 +1,106 @@
 <template>
   <div class="dashboard">
+    <div class="change-password">
+      <h3>Изменить пароль</h3>
+      <input type="password" v-model="newPassword" placeholder="Новый пароль" required />
+      <button @click="changePassword">Сменить пароль</button>
+      <p v-if="errorUser">{{ errorUser }}</p>
+      <p v-if="successMessage">{{ successMessage }}</p>
+    </div>
     <h2>Личный кабинет студента</h2>
 
-    <h3>Ваш прогресс обучения:</h3>
-    <ul v-if="progress.length">
-      <li v-for="item in progress" :key="item.id">{{ item.title }} - {{ item.status }}</li>
+    <ul v-if="userCourses.length">
+      <li v-for="(course, index) in userCourses" :key="index">
+        {{ course.course }} - Дата начала: {{ course.startDate }}
+      </li>
     </ul>
-    <p v-else>Нет данных о прогрессе.</p>
-
-    <h3>Уведомления:</h3>
-    <ul v-if="notifications.length">
-      <li v-for="note in notifications" :key="note.id">{{ note.message }}</li>
-    </ul>
-    <p v-else>Нет уведомлений.</p>
-
-    <h3>Документы:</h3>
-    <ul v-if="documents.length">
-      <li v-for="doc in documents" :key="doc.id"><a :href="doc.link">{{ doc.name }}</a></li>
-    </ul>
-    <p v-else>Нет доступных документов.</p>
-
-  </div></template>
+    <p v-else>Нет записанных курсов.</p>
+  </div>
+</template>
 
 <script>
+import { getAuth, updatePassword } from 'firebase/auth';
+import { getDatabase, ref, onValue } from 'firebase/database';
+import { database } from "@/main.js";
+
 export default {
   data() {
     return {
-      progress: [
-        { id: '1', title: 'Занятие по вождению', status: 'Пройдено' },
-        { id: '2', title: 'Тест по теории', status: 'Не пройдено' },
-      ],
-      notifications: [
-        { id: '1', message: 'Следующее занятие - понедельник в 10 утра.' },
-      ],
-      documents: [
-        { id: '1', name: 'Договор', link: '#' },
-        { id: '2', name: 'Квитанция об оплате', link: '#' },
-      ],
+      userCourses: [],
+      newPassword: '',
+      errorUser: '',
+      successMessage: '',
+      currentUserId: 'user123', // Замените на актуальный ID текущего пользователя
     };
+  },
+  created() {
+    this.fetchUserCourses();
+  },
+  methods: {
+    fetchUserCourses() {
+      const firebaseRef = ref(database, 'booking');
+
+      onValue(firebaseRef, (snapshot) => {
+        const coursesArray = [];
+        snapshot.forEach((childSnapshot) => {
+          const courseData = childSnapshot.val();
+          if (courseData.userId === this.currentUserId) {
+            coursesArray.push(courseData);
+          }
+        });
+        this.userCourses = coursesArray;
+      }, {
+        onlyOnce: true
+      });
+    },
+    changePassword() {
+      const userAuth = getAuth();
+      const user = userAuth.currentUser; // Получаем текущего пользователя
+
+      if (user) {
+        updatePassword(user, this.newPassword)
+          .then(() => {
+            this.successMessage = 'Пароль успешно изменен.';
+            this.newPassword = ''; // Сброс поля нового пароля
+            this.errorUser = ''; // Сброс ошибки
+          })
+          .catch((error) => {
+            this.errorUser = error.message;
+            this.successMessage = ''; // Сброс сообщения об успехе
+          });
+      } else {
+        this.errorUser = 'Пользователь не аутентифицирован.';
+      }
+    },
   },
 };
 </script>
 
 <style scoped>
 .dashboard {
-  max-width:600px;
-  margin:auto;
+  max-width: 600px;
+  margin: auto;
 }
 
 .dashboard h3 {
-  margin-top:.5rem;
+  margin-top: .5rem;
 }
 
 .dashboard ul {
-  list-style-type:none;
-  padding-left:.5rem;
+  list-style-type: none;
+  padding-left: .5rem;
+}
+
+.change-password {
+  margin-top: 20px;
 }
 
 .dashboard a {
-  color:#007bff;
-  text-decoration:none;
+  color: #007bff;
+  text-decoration: none;
 }
 
 .dashboard a:hover {
-  text-decoration:none;
+  text-decoration: underline;
 }
 </style>
