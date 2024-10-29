@@ -7,6 +7,7 @@
       <p v-if="errorUser">{{ errorUser }}</p>
       <p v-if="successMessage">{{ successMessage }}</p>
     </div>
+
     <h2>Личный кабинет студента</h2>
 
     <ul v-if="userCourses.length">
@@ -14,13 +15,20 @@
         {{ course.course }} - Дата начала: {{ course.startDate }}
       </li>
     </ul>
-    <p v-else>Нет записанных курсов.</p>
+    <p v-else-if="noCoursesFound">Нет записанных курсов.</p>
+
+    <div class="delete-account">
+      <h3>Удалить аккаунт</h3>
+      <button @click="deleteAccount">Удалить мой аккаунт</button>
+      <p v-if="deleteError">{{ deleteError }}</p>
+      <p v-if="deleteSuccess">{{ deleteSuccess }}</p>
+    </div>
   </div>
 </template>
 
 <script>
-import { getAuth, updatePassword } from 'firebase/auth';
-import { getDatabase, ref, onValue } from 'firebase/database';
+import { getAuth, updatePassword, deleteUser } from 'firebase/auth';
+import { getDatabase, ref, onValue, remove } from 'firebase/database';
 import { database } from "@/main.js";
 
 export default {
@@ -30,11 +38,16 @@ export default {
       newPassword: '',
       errorUser: '',
       successMessage: '',
-      currentUserId: 'user123', // Замените на актуальный ID текущего пользователя
+      noCoursesFound: false,
+      deleteError: '',
+      deleteSuccess: '',
+      currentUserId: null, // Замените на актуальный ID текущего пользователя
     };
   },
   created() {
     this.fetchUserCourses();
+    const userAuth = getAuth();
+    this.currentUserId = userAuth.currentUser ? userAuth.currentUser.uid : null; // Получаем ID текущего пользователя
   },
   methods: {
     fetchUserCourses() {
@@ -49,27 +62,61 @@ export default {
           }
         });
         this.userCourses = coursesArray;
+        this.noCoursesFound = coursesArray.length === 0;
       }, {
         onlyOnce: true
       });
     },
     changePassword() {
       const userAuth = getAuth();
-      const user = userAuth.currentUser; // Получаем текущего пользователя
+      const user = userAuth.currentUser;
 
       if (user) {
         updatePassword(user, this.newPassword)
           .then(() => {
             this.successMessage = 'Пароль успешно изменен.';
-            this.newPassword = ''; // Сброс поля нового пароля
-            this.errorUser = ''; // Сброс ошибки
+            this.newPassword = '';
+            this.errorUser = '';
           })
           .catch((error) => {
             this.errorUser = error.message;
-            this.successMessage = ''; // Сброс сообщения об успехе
+            this.successMessage = '';
           });
       } else {
         this.errorUser = 'Пользователь не аутентифицирован.';
+      }
+    },
+    deleteAccount() {
+      const userAuth = getAuth();
+      const user = userAuth.currentUser;
+
+      if (user) {
+        // Удаляем связанные данные из базы данных
+        const userCoursesRef = ref(database, 'booking');
+
+        // Удаляем курсы пользователя
+        onValue(userCoursesRef, (snapshot) => {
+          snapshot.forEach((childSnapshot) => {
+            const courseData = childSnapshot.val();
+            if (courseData.userId === user.uid) {
+              remove(ref(database, `booking/${childSnapshot.key}`));
+            }
+          });
+        });
+
+        // Удаляем аккаунт пользователя
+        deleteUser(user)
+          .then(() => {
+            this.deleteSuccess = 'Аккаунт успешно удален.';
+            this.deleteError = '';
+            // Можно перенаправить пользователя на страницу входа или главную страницу
+          })
+          .catch((error) => {
+            this.deleteError = error.message;
+            this.deleteSuccess = '';
+          });
+      } else {
+        this.deleteError = 'Пользователь не аутентифицирован.';
       }
     },
   },
@@ -91,7 +138,8 @@ export default {
   padding-left: .5rem;
 }
 
-.change-password {
+.change-password,
+.delete-account {
   margin-top: 20px;
 }
 

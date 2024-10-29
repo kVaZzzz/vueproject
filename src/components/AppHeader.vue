@@ -29,8 +29,10 @@
 import {getAuth, signOut} from "firebase/auth";
 import {storeToRefs} from "pinia/dist/pinia";
 import {useUserStore} from "@/stores/counter.js";
-import router from "@/router/index.js";
 export default {
+  props: {
+    isAuth: Boolean,
+  },
 
   setup() {
     const userStore = storeToRefs(useUserStore())
@@ -40,6 +42,7 @@ export default {
       isAuth,
     }
   },
+
   methods: {
     logout() {
       const user = getAuth();
@@ -56,7 +59,8 @@ export default {
         console.log('Пользователь был не авторизован');
       }
     }
-  }
+  },
+
 };
 </script>
 <style scoped>
