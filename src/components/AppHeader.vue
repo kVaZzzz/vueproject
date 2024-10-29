@@ -3,20 +3,20 @@
     <header>
       <h1>Добро пожаловать в Автошколу</h1>
       <nav>
-        <router-link to="/auth"  v-if="!isAuth">Авторизация</router-link>
+        <router-link to="/auth" v-if="!isAuth">Авторизация</router-link>
         <router-link to="/courses">Курсы</router-link>
-        <router-link to="/booking">Запись на занятия</router-link>
+        <router-link to="/booking" v-if="isAuth">Запись на занятия</router-link>
         <router-link to="/dashboard" v-if="isAuth">Личный кабинет</router-link>
         <router-link to="/reviews">Отзывы</router-link>
         <router-link to="/contact">Контакты</router-link>
         <router-link to="/news">Новости</router-link>
+
         <form @submit.prevent="logout">
-          <button type="submit" v-if="isAuth">
-            Выйти
-          </button>
+          <button type="submit" v-if="isAuth">Выйти</button>
         </form>
       </nav>
     </header>
+
     <main>
       <section class="intro">
         <h2>Учитесь водить с нами!</h2>
@@ -25,44 +25,40 @@
     </main>
   </div>
 </template>
+
 <script>
-import {getAuth, signOut} from "firebase/auth";
-import {storeToRefs} from "pinia/dist/pinia";
-import {useUserStore} from "@/stores/counter.js";
+import { computed, onMounted } from 'vue';
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { useUserStore } from "@/stores/userStore";
+
 export default {
-  props: {
-    isAuth: Boolean,
-  },
-
   setup() {
-    const userStore = storeToRefs(useUserStore())
-    const { isAuth } = userStore
+    const userStore = useUserStore();
 
-    return {
-      isAuth,
-    }
+    const isAuth = computed(() => userStore.isAuthenticated);
+
+    onMounted(() => {
+      const auth = getAuth();
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          userStore.setUser(user); // Устанавливаем пользователя
+        } else {
+          userStore.clearUser(); // Очищаем пользователя
+        }
+      });
+    });
+
+    const logout = async () => {
+      const auth = getAuth();
+      await signOut(auth);
+      userStore.clearUser(); // Очищаем пользователя из хранилища
+    };
+
+    return { isAuth, logout };
   },
-
-  methods: {
-    logout() {
-      const user = getAuth();
-      if (this.isAuth) {
-        signOut(user)
-          .then(() => {
-            localStorage.removeItem('user');
-            this.isAuth = false;
-          })
-          .catch((error) => {
-            console.error('Error:', error.message);
-          });
-      } else {
-        console.log('Пользователь был не авторизован');
-      }
-    }
-  },
-
 };
 </script>
+
 <style scoped>
 header {
   background-color: #f8f9fa;

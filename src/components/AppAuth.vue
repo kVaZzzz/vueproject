@@ -7,37 +7,42 @@
       <button type="submit">Войти</button>
       <router-link to="/reg">Зарегистрироваться</router-link>
     </form>
+    <p v-if="errorUser">{{ errorUser }}</p>
   </div>
 </template>
 
 <script>
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import {apps} from "@/main.js";
+import { reactive, ref } from 'vue';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { apps } from "@/main.js";
+import { useUserStore } from "@/stores/counter.js"; // Импортируем хранилище
 import router from "@/router/index.js";
 
 export default {
-  data() {
-    return {
-      formData: {
-        email: '',
-        password: '',
-      },
+  setup() {
+    const userStore = useUserStore(); // Инициализируем хранилище
+    const formData = reactive({
+      email: '',
+      password: '',
+    });
+    const errorUser = ref('');
+
+    const handleSubmit = () => {
+      const userAuth = getAuth(apps);
+      signInWithEmailAndPassword(userAuth, formData.email, formData.password)
+        .then((res) => {
+          const userData = res.user;
+          localStorage.setItem('user', JSON.stringify(userData));
+          userStore.setUser(userData); // Устанавливаем пользователя в хранилище
+          router.push('/dashboard'); // Перенаправление на личный кабинет
+        })
+        .catch((error) => {
+          errorUser.value = error.message; // Обработка ошибок
+        });
     };
+
+    return { formData, errorUser, handleSubmit };
   },
-  methods: {
-    handleSubmit() {
-      const userAuth = getAuth(apps)
-      signInWithEmailAndPassword(userAuth, this.formData.email, this.formData.password).then((res) => {
-        const userData = res.user;
-        localStorage.setItem('user', JSON.stringify(userData));
-        this.user = userData;
-        this.isAuth = true
-        router.push('/');
-      }).catch((error) => {
-        this.errorUser = error.message
-      })
-    },
-  }
 };
 </script>
 

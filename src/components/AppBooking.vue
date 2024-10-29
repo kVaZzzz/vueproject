@@ -18,7 +18,8 @@
 </template>
 
 <script>
-import { getDatabase, ref, set } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
+import { ref, set } from 'firebase/database';
 import { database } from "@/main.js";
 
 export default {
@@ -31,9 +32,23 @@ export default {
         1: 'Категория В',
         2: 'Категория С'
       },
-      currentUserId: 'user123',
+      currentUserId: null, // Изначально null
     };
   },
+
+  mounted() {
+    // Получаем текущего пользователя из Firebase Authentication
+    const userAuth = getAuth();
+    const user = userAuth.currentUser;
+
+    if (user) {
+      this.currentUserId = user.uid; // Получаем uid из объекта user
+      console.log('Текущий ID пользователя:', this.currentUserId);
+    } else {
+      console.error('Пользователь не аутентифицирован.');
+    }
+  },
+
   methods: {
     handleBooking() {
       if (!this.selectedCourse || !this.startDate) {
@@ -56,6 +71,7 @@ export default {
           this.successMessage = `Вы успешно записаны на курс "${bookingData.course}" с датой начала ${bookingData.startDate}.`;
           // Сбрасываем форму после успешной записи
           this.selectedCourse = '';
+          console.log(bookingData.userId);
           this.startDate = '';
 
           setTimeout(() => {

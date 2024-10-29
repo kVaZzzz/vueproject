@@ -2,9 +2,9 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import { getDatabase } from 'firebase/database';
-import {getStorage} from "firebase/storage"
-import {getAuth } from "firebase/auth";
-import { createPinia } from 'pinia'
+import { getStorage } from "firebase/storage";
+import { getAuth } from "firebase/auth";
+import { createPinia } from 'pinia';
 import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
@@ -18,14 +18,14 @@ const firebaseConfig = {
 };
 
 const apps = initializeApp(firebaseConfig);
-const storage = getStorage(apps)
-const auth = getAuth(apps)
-const app = createApp(App)
+const storage = getStorage(apps);
+const auth = getAuth(apps);
 const database = getDatabase(apps);
-// Initialize Firebase
+const pinia = createPinia();
+
+export { database, storage, auth, apps };
+
 createApp(App)
   .use(router)
-  .use(createPinia())
+  .use(pinia)
   .mount('#app');
-export {database,storage,auth,apps }
-

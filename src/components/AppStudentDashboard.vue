@@ -41,14 +41,23 @@ export default {
       noCoursesFound: false,
       deleteError: '',
       deleteSuccess: '',
-      currentUserId: null, // Замените на актуальный ID текущего пользователя
+      currentUserId: null,
     };
   },
+
   created() {
     this.fetchUserCourses();
     const userAuth = getAuth();
-    this.currentUserId = userAuth.currentUser ? userAuth.currentUser.uid : null; // Получаем ID текущего пользователя
+    const user = userAuth.currentUser;
+
+    if (user) {
+      this.currentUserId = user.uid; // Получаем uid из объекта user
+      console.log('Текущий ID пользователя:', this.currentUserId);
+    } else {
+      console.error('Пользователь не аутентифицирован.');
+    }
   },
+
   methods: {
     fetchUserCourses() {
       const firebaseRef = ref(database, 'booking');
@@ -61,12 +70,14 @@ export default {
             coursesArray.push(courseData);
           }
         });
+        console.log('Полученные курсы:', coursesArray);
         this.userCourses = coursesArray;
         this.noCoursesFound = coursesArray.length === 0;
       }, {
         onlyOnce: true
       });
     },
+
     changePassword() {
       const userAuth = getAuth();
       const user = userAuth.currentUser;
@@ -86,12 +97,12 @@ export default {
         this.errorUser = 'Пользователь не аутентифицирован.';
       }
     },
+
     deleteAccount() {
       const userAuth = getAuth();
       const user = userAuth.currentUser;
 
       if (user) {
-        // Удаляем связанные данные из базы данных
         const userCoursesRef = ref(database, 'booking');
 
         // Удаляем курсы пользователя
@@ -109,7 +120,6 @@ export default {
           .then(() => {
             this.deleteSuccess = 'Аккаунт успешно удален.';
             this.deleteError = '';
-            // Можно перенаправить пользователя на страницу входа или главную страницу
           })
           .catch((error) => {
             this.deleteError = error.message;
