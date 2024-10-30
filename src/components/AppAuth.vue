@@ -5,7 +5,7 @@
       <input type="email" v-model="formData.email" placeholder="Email" required />
       <input type="password" v-model="formData.password" placeholder="Пароль" required />
       <button type="submit">Войти</button>
-      <router-link to="/reg">Зарегистрироваться</router-link>
+      <button type="submit"><router-link class="reg" to="/reg">Зарегистрироваться</router-link></button>
     </form>
     <p v-if="errorUser">{{ errorUser }}</p>
   </div>
@@ -67,7 +67,10 @@ export default {
   display: flex;
   flex-direction: column;
 }
-
+.reg{
+  color: white;
+  text-decoration: none;
+}
 .auth input {
   padding: 10px;
   margin-bottom: 15px;
@@ -89,6 +92,7 @@ export default {
   border-radius: 4px;
   font-size: 16px;
   cursor: pointer;
+  margin-bottom: 5px;
 }
 
 .auth button:hover {
@@ -103,6 +107,5 @@ export default {
 .auth a {
   display: block;
   text-align: center;
-  margin-top: 10px;
 }
 </style>
