@@ -49,16 +49,60 @@ export default {
 <style scoped>
 .auth {
   max-width: 400px;
-  margin: auto;
+  margin: 50px auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
 }
-form {
+
+.auth h2 {
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.auth form {
   display: flex;
   flex-direction: column;
 }
-input {
-  margin-bottom: 10px;
+
+.auth input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
 }
-button {
+
+.auth input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.auth button {
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.auth button:hover {
+  background-color: #0056b3;
+}
+
+.auth p {
+  text-align: center;
+  color: red; /* Цвет для сообщения об ошибке */
+}
+
+.auth a {
+  display: block;
+  text-align: center;
   margin-top: 10px;
 }
 </style>

@@ -60,28 +60,68 @@ export default {
 </script>
 
 <style scoped>
-header {
-  background-color: #f8f9fa;
+.home {
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 20px;
+  background-color: #f9f9f9;
 }
-button{
-  border: none;
-  cursor: pointer;
+
+header {
+  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(32,5,45,1) 98%, rgba(0,212,255,1) 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
 }
-router-link{
-  text-decoration: none;
+
+header h1 {
+  text-align: center;
+  margin-bottom: 15px;
 }
-nav{
+
+nav {
   display: flex;
-  flex-direction: row;
-  justify-content: center;
+  flex-wrap: wrap;
+  justify-content: center; /* Центрируем навигацию */
 }
+
 nav a {
-  margin: 0 15px;
+  color: white;
   text-decoration: none;
-  color: black;
+  margin: 0 15px; /* Отступы между ссылками */
 }
+
+nav a:hover {
+  text-decoration: underline; /* Подчеркивание при наведении */
+}
+
+nav form {
+  margin-left: 20px; /* Отступ для формы выхода */
+  margin-top: -7px;
+}
+
+nav button {
+  background-color: #dc3545; /* Цвет кнопки выхода */
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+nav button:hover {
+  background-color: #c82333; /* Эффект наведения для кнопки выхода */
+}
+
 .intro {
-  margin: 20px;
+  text-align: center; /* Центрируем текст в секции */
+  margin-top: 40px;
+}
+
+.intro h2 {
+  font-size: 26px;
+}
+
+.intro p {
+  font-size: 18px;
 }
 </style>

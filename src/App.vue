@@ -9,9 +9,6 @@ export default {
 <template>
   <div class="wrapper">
     <AppHeader></AppHeader>
-    <main>
-        <RouterView></RouterView>
-    </main>
     <AppFooter></AppFooter>
   </div>
 </template>
@@ -33,4 +30,5 @@ nav a {
 footer {
   margin-top: 20px;
 }
+
 </style>

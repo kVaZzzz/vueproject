@@ -98,33 +98,49 @@ export default {
 <style scoped>
 .review-list {
   max-width: 600px;
-  margin: auto;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .review-list ul {
-  list-style-type: none;
-  padding-left: 0;
+  list-style-type: none; /* Убираем маркеры списка */
+  padding-left: 0; /* Убираем отступ слева */
 }
 
 .review-list li {
+  background-color: #ffffff;
+  border-radius: 6px;
+  padding: 15px;
   margin-bottom: 20px;
-  border: 1px solid #ccc;
-  padding: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.review-list strong {
+  font-size: 18px;
+  color: #333;
+}
+
+.review-list p {
+  margin: 5px 0; /* Добавляем отступы между параграфами */
 }
 
 .review-list button {
   background-color: #007bff;
   color: white;
   border: none;
-  padding: 5px 10px;
+  padding: 8px 12px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
 .review-list button:hover {
-  background-color: #0056b3;
+  background-color: #0056b3; /* Эффект наведения */
 }
 
-.review-list button.liked {
-  background-color: #dc3545; /* Изменение цвета при лайке */
+.review-list .liked {
+  background-color: #28a745; /* Цвет для кнопки лайка */
 }
 </style>

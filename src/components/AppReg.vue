@@ -76,36 +76,51 @@ export default {
 
 <style scoped>
 
-.registration {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.invalid {
-  color: var(--color-error);
-}
-
-p {
-  padding: 5px;
-  font-weight: bolder;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  border-radius: 20px;
-  border: #e0e0e0 2px solid;
-  width: fit-content;
-  padding: 30px;
-  height: fit-content;
-}
-
-input {
-  border-radius: 20px;
-  border: var( --color-border);
+.wrap.registration {
+  max-width: 400px;
+  margin: 50px auto;
   padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
 }
 
+.wrap.registration p {
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.wrap.registration form {
+  display: flex;
+  flex-direction: column;
+}
+
+.wrap.registration input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.wrap.registration input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.wrap.registration button {
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.wrap.registration button:hover {
+  background-color: #0056b3;
+}
 </style>

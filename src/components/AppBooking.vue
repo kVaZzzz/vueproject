@@ -88,21 +88,58 @@ export default {
 
 <style scoped>
 .booking {
-  max-width: 400px;
-  margin: auto;
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
-form {
+
+.booking h2 {
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.booking form {
   display: flex;
   flex-direction: column;
 }
-select, input {
-  margin-bottom: .5rem;
+
+.booking select,
+.booking input[type="date"],
+.booking button {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
 }
-button {
-  margin-top: .5rem;
+
+.booking select:focus,
+.booking input[type="date"]:focus {
+  border-color: #007bff;
+  outline: none;
 }
+
+.booking button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.booking button:hover {
+  background-color: #0056b3;
+}
+
 .success-message {
-  margin-top: 1rem;
-  color: green;
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #d4edda; /* Цвет фона для успешного сообщения */
+  color: #155724; /* Цвет текста для успешного сообщения */
+  border-radius: 4px;
 }
 </style>

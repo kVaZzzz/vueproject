@@ -136,29 +136,77 @@ export default {
 <style scoped>
 .dashboard {
   max-width: 600px;
-  margin: auto;
-}
-
-.dashboard h3 {
-  margin-top: .5rem;
-}
-
-.dashboard ul {
-  list-style-type: none;
-  padding-left: .5rem;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .change-password,
 .delete-account {
-  margin-top: 20px;
+  background-color: #ffffff;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.dashboard a {
-  color: #007bff;
-  text-decoration: none;
+.dashboard h2 {
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
 }
 
-.dashboard a:hover {
-  text-decoration: underline;
+.change-password h3,
+.delete-account h3 {
+  font-size: 22px;
+  margin-bottom: 15px;
+}
+
+.dashboard input[type="password"],
+.dashboard button {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.dashboard input[type="password"]:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.dashboard button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+}
+
+.dashboard button:hover {
+  background-color: #0056b3;
+}
+
+.dashboard p {
+  color: #d9534f; /* Цвет для сообщений об ошибках */
+}
+
+.dashboard p:nth-of-type(n+2) { /* Убираем цвет ошибки для успешных сообщений */
+  color: #5cb85c; /* Цвет для успешных сообщений */
+}
+
+.dashboard ul {
+  list-style-type: none; /* Убираем маркеры списка */
+  padding-left: 0; /* Убираем отступ слева */
+}
+
+.dashboard li {
+  padding: 10px;
+  border-bottom: 1px solid #eaeaea; /* Линия между курсами */
+}
+
+.dashboard li:last-child {
+  border-bottom: none; /* Убираем линию у последнего элемента списка */
 }
 </style>
