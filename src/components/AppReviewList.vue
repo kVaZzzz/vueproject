@@ -106,8 +106,8 @@ export default {
 }
 
 .review-list ul {
-  list-style-type: none; /* Убираем маркеры списка */
-  padding-left: 0; /* Убираем отступ слева */
+  list-style-type: none;
+  padding-left: 0;
 }
 
 .review-list li {
@@ -124,7 +124,7 @@ export default {
 }
 
 .review-list p {
-  margin: 5px 0; /* Добавляем отступы между параграфами */
+  margin: 5px 0;
 }
 
 .review-list button {
@@ -137,10 +137,10 @@ export default {
 }
 
 .review-list button:hover {
-  background-color: #0056b3; /* Эффект наведения */
+  background-color: #0056b3;
 }
 
 .review-list .liked {
-  background-color: #28a745; /* Цвет для кнопки лайка */
+  background-color: #28a745;
 }
 </style>

@@ -51,7 +51,7 @@ export default {
     const user = userAuth.currentUser;
 
     if (user) {
-      this.currentUserId = user.uid; // Получаем uid из объекта user
+      this.currentUserId = user.uid;
       console.log('Текущий ID пользователя:', this.currentUserId);
     } else {
       console.error('Пользователь не аутентифицирован.');
@@ -115,7 +115,6 @@ export default {
           });
         });
 
-        // Удаляем аккаунт пользователя
         deleteUser(user)
           .then(() => {
             this.deleteSuccess = 'Аккаунт успешно удален.';
@@ -189,24 +188,24 @@ export default {
 }
 
 .dashboard p {
-  color: #d9534f; /* Цвет для сообщений об ошибках */
+  color: #d9534f;
 }
 
-.dashboard p:nth-of-type(n+2) { /* Убираем цвет ошибки для успешных сообщений */
-  color: #5cb85c; /* Цвет для успешных сообщений */
+.dashboard p:nth-of-type(n+2) {
+  color: #5cb85c;
 }
 
 .dashboard ul {
-  list-style-type: none; /* Убираем маркеры списка */
-  padding-left: 0; /* Убираем отступ слева */
+  list-style-type: none;
+  padding-left: 0;
 }
 
 .dashboard li {
   padding: 10px;
-  border-bottom: 1px solid #eaeaea; /* Линия между курсами */
+  border-bottom: 1px solid #eaeaea;
 }
 
 .dashboard li:last-child {
-  border-bottom: none; /* Убираем линию у последнего элемента списка */
+  border-bottom: none;
 }
 </style>

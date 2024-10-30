@@ -1,7 +1,6 @@
 <template>
   <div class="app-container">
     <div class="content">
-      <!-- Основной контент вашего приложения -->
       <router-view></router-view>
     </div>
     <footer class="footer">
@@ -28,34 +27,34 @@
 </template>
 <style scoped>
 html, body {
-  height: 100%; /* Устанавливаем высоту для html и body */
-  margin: 0; /* Убираем отступы */
+  height: 100%;
+  margin: 0;
 }
 
 .app-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Минимальная высота контейнера равна высоте окна */
+  min-height: 100vh;
 }
 
 .content {
-  flex: 1; /* Позволяет контенту занимать оставшееся пространство */
+  flex: 1;
 }
 
 .footer {
   background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(32,5,45,1) 98%, rgba(0,212,255,1) 100%);
   color: white;
-  padding: 20px 0; /* Отступы сверху и снизу */
+  padding: 20px 0;
 }
 
 .footer-content {
-  max-width: 1200px; /* Максимальная ширина содержимого */
-  margin: 0 auto; /* Центрируем содержимое */
-  text-align: center; /* Центрируем текст */
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .footer-nav {
-  margin: 10px 0; /* Отступы для навигации */
+  margin: 10px 0;
   display: flex;
   justify-content: center;
 }
@@ -69,28 +68,28 @@ html, body {
 .footer-nav router-link {
   color: white;
   text-decoration: none;
-  margin: 0 15px; /* Отступы между ссылками */
+  margin: 0 15px;
 }
 
 .footer-nav router-link:hover {
-  text-decoration: underline; /* Подчеркивание при наведении */
+  text-decoration: underline;
 }
 
 .contact-info {
-  margin: 10px 0; /* Отступы для контактной информации */
+  margin: 10px 0;
 }
 
 .social-media {
-  margin-top: 10px; /* Отступ сверху для социальных медиа */
+  margin-top: 10px;
 }
 
 .social-media a {
   color: white;
   text-decoration: none;
-  margin: 0 10px; /* Отступы между ссылками */
+  margin: 0 10px;
 }
 
 .social-media a:hover {
-  text-decoration: underline; /* Подчеркивание при наведении */
+  text-decoration: underline;
 }
 </style>

@@ -9,6 +9,7 @@
         v-model="formData.email"
         required
       />
+      <p v-if="errorEmail" class="error">{{ errorEmail }}</p>
       <input
         type="password"
         name="password"
@@ -16,66 +17,81 @@
         v-model="formData.password"
         required
       />
+      <p v-if="errorPassword" class="error">{{ errorPassword }}</p>
       <button type="submit">Зарегистрироваться</button>
     </form>
   </section>
 </template>
 
 <script>
-import {apps} from "../main.js";
-import {getAuth, createUserWithEmailAndPassword,fetchSignInMethodsForEmail} from "firebase/auth";
-import {storeToRefs} from "pinia";
-import {useUserStore} from "../stores/counter.js";
+import { apps } from "../main.js";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "../stores/counter.js";
 import router from "@/router/index.js";
 
 export default {
-
-  data () {
+  data() {
     return {
-      errorUser:'',
-      errorEmail:"",
-      errors: [],
+      errorUser: '',
+      errorEmail: '',
+      errorPassword: '',
       formData: {
-        email:'',
-        password:'',
+        email: '',
+        password: '',
       },
-    }
+    };
   },
   setup() {
-    const userStore = storeToRefs(useUserStore())
-    const { user } = userStore
+    const userStore = storeToRefs(useUserStore());
+    const { user } = userStore;
 
     return {
-      user
-    }
+      user,
+    };
   },
   methods: {
+    validateEmail(email) {
+      const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return re.test(email);
+    },
     async handleSubmit() {
+      this.errorEmail = '';
+      this.errorPassword = '';
+
+      if (!this.validateEmail(this.formData.email)) {
+        this.errorEmail = 'Введите корректный email. Пример: user@example.com';
+        return;
+      }
+
+      if (this.formData.password.length < 6) {
+        this.errorPassword = 'Пароль должен содержать минимум 6 символов.';
+        return;
+      }
+
       try {
-        const userAuth = getAuth(apps)
+        const userAuth = getAuth(apps);
         const userCredential = await createUserWithEmailAndPassword(userAuth, this.formData.email, this.formData.password);
         const userData = userCredential.user;
         localStorage.setItem('userUID', userData.uid);
         this.user = userData;
-        console.log(userData)
+        console.log(userData);
         router.push('/auth');
       } catch (error) {
         if (error.code === 'auth/email-already-in-use') {
-          this.errorEmail = ''
-          this.errorUser = error
+          this.errorEmail = 'Этот email уже зарегистрирован.';
+          this.errorUser = '';
+        } else {
+          this.errorUser = error.message; // Обработка других ошибок
+          console.error('Error:', error.message, error.code);
         }
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.error('Error:', errorMessage,errorCode);
       }
     },
-  }
-}
-
+  },
+};
 </script>
 
 <style scoped>
-
 .wrap.registration {
   max-width: 400px;
   margin: 50px auto;
@@ -83,13 +99,6 @@ export default {
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   background-color: #ffffff;
-}
-
-.wrap.registration p {
-  font-size: 24px;
-  text-align: center;
-  margin-bottom: 20px;
-  color: #333;
 }
 
 .wrap.registration form {
@@ -117,10 +126,14 @@ export default {
   border: none;
   border-radius: 4px;
   font-size: 16px;
-  cursor: pointer;
 }
 
 .wrap.registration button:hover {
   background-color: #0056b3;
+}
+
+.error {
+  color: red;
+  font-size: small;
 }
 </style>

@@ -41,9 +41,9 @@ export default {
       const auth = getAuth();
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          userStore.setUser(user); // Устанавливаем пользователя
+          userStore.setUser(user);
         } else {
-          userStore.clearUser(); // Очищаем пользователя
+          userStore.clearUser();
         }
       });
     });
@@ -51,7 +51,7 @@ export default {
     const logout = async () => {
       const auth = getAuth();
       await signOut(auth);
-      userStore.clearUser(); // Очищаем пользователя из хранилища
+      userStore.clearUser();
     };
 
     return { isAuth, logout };
@@ -82,26 +82,26 @@ header h1 {
 nav {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center; /* Центрируем навигацию */
+  justify-content: center;
 }
 
 nav a {
   color: white;
   text-decoration: none;
-  margin: 0 15px; /* Отступы между ссылками */
+  margin: 0 15px;
 }
 
 nav a:hover {
-  text-decoration: underline; /* Подчеркивание при наведении */
+  text-decoration: underline;
 }
 
 nav form {
-  margin-left: 20px; /* Отступ для формы выхода */
+  margin-left: 20px;
   margin-top: -7px;
 }
 
 nav button {
-  background-color: #dc3545; /* Цвет кнопки выхода */
+  background-color: #dc3545;
   color: white;
   border: none;
   padding: 8px 12px;
@@ -109,11 +109,11 @@ nav button {
 }
 
 nav button:hover {
-  background-color: #c82333; /* Эффект наведения для кнопки выхода */
+  background-color: #c82333;
 }
 
 .intro {
-  text-align: center; /* Центрируем текст в секции */
+  text-align: center;
   margin-top: 40px;
 }
 

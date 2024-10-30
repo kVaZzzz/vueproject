@@ -2,12 +2,14 @@
   <div class="booking">
     <h2>Онлайн-запись на курсы</h2>
     <form @submit.prevent="handleBooking">
-      <select v-model="selectedCourse">
+      <select v-model="selectedCourse" required>
         <option disabled value="">Выберите курс</option>
         <option v-for="(course, key) in courses" :key="key" :value="key">{{ course }}</option>
       </select>
 
       <input type="date" v-model="startDate" required />
+      <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+
       <button type="submit">Записаться на курс</button>
     </form>
 
@@ -28,21 +30,21 @@ export default {
       selectedCourse: '',
       startDate: '',
       successMessage: '',
+      errorMessage: '',
       courses: {
         1: 'Категория В',
         2: 'Категория С'
       },
-      currentUserId: null, // Изначально null
+      currentUserId: null,
     };
   },
 
   mounted() {
-    // Получаем текущего пользователя из Firebase Authentication
     const userAuth = getAuth();
     const user = userAuth.currentUser;
 
     if (user) {
-      this.currentUserId = user.uid; // Получаем uid из объекта user
+      this.currentUserId = user.uid;
       console.log('Текущий ID пользователя:', this.currentUserId);
     } else {
       console.error('Пользователь не аутентифицирован.');
@@ -51,8 +53,18 @@ export default {
 
   methods: {
     handleBooking() {
+      this.errorMessage = '';
+
       if (!this.selectedCourse || !this.startDate) {
-        alert('Пожалуйста, выберите курс и дату.');
+        this.errorMessage = 'Пожалуйста, выберите курс и дату.';
+        return;
+      }
+
+      const selectedDate = new Date(this.startDate);
+      const currentDate = new Date();
+
+      if (selectedDate <= currentDate) {
+        this.errorMessage = 'Дата начала должна быть в будущем.';
         return;
       }
 
@@ -62,16 +74,12 @@ export default {
         startDate: this.startDate,
       };
 
-      // Получаем ссылку на базу данных
       const firebaseRef = ref(database, 'booking/' + Date.now());
 
-      // Записываем данные в Firebase
       set(firebaseRef, bookingData)
         .then(() => {
           this.successMessage = `Вы успешно записаны на курс "${bookingData.course}" с датой начала ${bookingData.startDate}.`;
-          // Сбрасываем форму после успешной записи
           this.selectedCourse = '';
-          console.log(bookingData.userId);
           this.startDate = '';
 
           setTimeout(() => {
@@ -80,6 +88,7 @@ export default {
         })
         .catch((error) => {
           console.error('Ошибка записи в Firebase:', error);
+          this.errorMessage = 'Произошла ошибка при записи. Пожалуйста, попробуйте еще раз.';
         });
     },
   }
@@ -138,8 +147,14 @@ export default {
 .success-message {
   margin-top: 20px;
   padding: 10px;
-  background-color: #d4edda; /* Цвет фона для успешного сообщения */
-  color: #155724; /* Цвет текста для успешного сообщения */
+  background-color: #d4edda;
+  color: #155724;
   border-radius: 4px;
+}
+
+.error {
+  color: red;
+  font-size: small;
+  margin-top: -10px;
 }
 </style>

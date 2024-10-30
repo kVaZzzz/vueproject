@@ -4,14 +4,16 @@
       <h3>Отзывы</h3>
       <p>
         <label for="name">Имя</label>
-        <input id="name" v-model="formData.name" placeholder="name">
+        <input id="name" v-model="formData.name" placeholder="Ваше имя" required>
+      <p v-if="errorName" class="error">{{ errorName }}</p>
       </p>
       <p>
-        <label for="review">Review:</label>
-        <textarea id="review" v-model="formData.review" placeholder="Ваш комментарий"></textarea>
+        <label for="review">Отзыв:</label>
+        <textarea id="review" v-model="formData.review" placeholder="Ваш комментарий" required></textarea>
+      <p v-if="errorReview" class="error">{{ errorReview }}</p>
       </p>
       <div>
-        <label for="rating">Rating:</label>
+        <label for="rating">Оценка:</label>
         <select id="rating" v-model="formData.rating">
           <option value="1">Плохо</option>
           <option value="2">Нормально</option>
@@ -19,47 +21,74 @@
         </select>
       </div>
       <p>
-        <input class="button" type="submit" value="Send">
+        <input class="button" type="submit" value="Отправить">
       </p>
+
+      <div v-if="successMessage" class="success-message">
+        {{ successMessage }}
+      </div>
     </form>
   </section>
 </template>
 <script>
-import {getDatabase,set,ref, get,push} from "firebase/database";
-import {database} from "@/main.js";
+import { getDatabase, set, ref, push } from "firebase/database";
+import { database } from "@/main.js";
 
 export default {
   data() {
     return {
-      id: '',
-      formData :{
+      formData: {
         name: '',
         review: '',
-        rating:1,
+        rating: 1,
       },
-    }
+      errorName: '',
+      errorReview: '',
+      successMessage: '',
+    };
   },
   methods: {
     onSubmit() {
-      if (this.formData.name || this.formData.review) {
-        let db = database
-        const Review = ref(db, "review")
-        const newReview = push(Review)
-        set(newReview, {
-          name: this.formData.name,
-          review: this.formData.review,
-          rating: this.formData.rating,
-        }).then(() => {
-          const key = newReview.key
-          this.key = key;
-          console.log(this.key)
-          console.log('qwe')
-        }).catch((error) => {
-          console.error(error);
-        });
-      } else {
+      this.errorName = '';
+      this.errorReview = '';
+      this.successMessage = '';
 
+      // Валидация полей
+      if (!this.formData.name) {
+        this.errorName = 'Пожалуйста, введите ваше имя.';
+        return;
       }
+
+      if (!this.formData.review) {
+        this.errorReview = 'Пожалуйста, напишите ваш отзыв.';
+        return;
+      }
+
+      const db = database;
+      const Review = ref(db, "reviews");
+      const newReview = push(Review);
+
+      set(newReview, {
+        name: this.formData.name,
+        review: this.formData.review,
+        rating: this.formData.rating,
+      })
+        .then(() => {
+          // Успешная отправка отзыва
+          this.successMessage = 'Ваш отзыв успешно отправлен!';
+          // Сброс данных формы
+          this.formData.name = '';
+          this.formData.review = '';
+          this.formData.rating = 1;
+
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 5000);
+        })
+        .catch((error) => {
+          console.error('Ошибка при отправке отзыва:', error);
+          this.errorReview = 'Произошла ошибка при отправке отзыва. Пожалуйста, попробуйте еще раз.';
+        });
     }
   }
 }
@@ -108,7 +137,7 @@ export default {
 }
 
 .review-form textarea {
-  resize: vertical; /* Позволяет изменять размер только по вертикали */
+  resize: vertical;
 }
 
 .review-form .button {
@@ -120,6 +149,20 @@ export default {
 }
 
 .review-form .button:hover {
-  background-color: #0056b3; /* Эффект наведения */
+  background-color: #0056b3;
+}
+
+.error {
+  color: red;
+  font-size: small;
+  margin-top: -10px;
+}
+
+.success-message {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #d4edda;
+  color: #155724;
+  border-radius: 4px;
 }
 </style>

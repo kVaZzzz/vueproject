@@ -3,50 +3,77 @@
     <h2>Авторизация</h2>
     <form @submit.prevent="handleSubmit">
       <input type="email" v-model="formData.email" placeholder="Email" required />
+      <p v-if="emailError" class="error">{{ emailError }}</p>
       <input type="password" v-model="formData.password" placeholder="Пароль" required />
+      <p v-if="passwordError" class="error">{{ passwordError }}</p>
       <button type="submit">Войти</button>
-      <button type="submit"><router-link class="reg" to="/reg">Зарегистрироваться</router-link></button>
+      <button type="button"><router-link class="reg" to="/reg">Зарегистрироваться</router-link></button>
     </form>
     <p v-if="errorUser">{{ errorUser }}</p>
   </div>
 </template>
-
 <script>
 import { reactive, ref } from 'vue';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { apps } from "@/main.js";
-import { useUserStore } from "@/stores/counter.js"; // Импортируем хранилище
+import { useUserStore } from "@/stores/counter.js";
 import router from "@/router/index.js";
 
 export default {
   setup() {
-    const userStore = useUserStore(); // Инициализируем хранилище
+    const userStore = useUserStore();
     const formData = reactive({
       email: '',
       password: '',
     });
     const errorUser = ref('');
+    const emailError = ref('');
+    const passwordError = ref('');
+
+    const validateEmail = (email) => {
+      const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return re.test(email);
+    };
 
     const handleSubmit = () => {
+
+      emailError.value = '';
+      passwordError.value = '';
+
+
+      if (!validateEmail(formData.email)) {
+        emailError.value = 'Введите корректный email. Пример: user@example.com';
+        return;
+      }
+
+      if (formData.password.length < 6) {
+        passwordError.value = 'Пароль должен содержать минимум 6 символов.';
+        return;
+      }
+
       const userAuth = getAuth(apps);
       signInWithEmailAndPassword(userAuth, formData.email, formData.password)
         .then((res) => {
           const userData = res.user;
           localStorage.setItem('user', JSON.stringify(userData));
-          userStore.setUser(userData); // Устанавливаем пользователя в хранилище
-          router.push('/dashboard'); // Перенаправление на личный кабинет
+          userStore.setUser(userData);
+          router.push('/dashboard');
         })
         .catch((error) => {
-          errorUser.value = error.message; // Обработка ошибок
+          errorUser.value = error.message;
         });
     };
 
-    return { formData, errorUser, handleSubmit };
+    return { formData, errorUser, emailError, passwordError, handleSubmit };
   },
 };
 </script>
 
 <style scoped>
+.error {
+  color: red;
+  font-size: small;
+}
 .auth {
   max-width: 400px;
   margin: 50px auto;
