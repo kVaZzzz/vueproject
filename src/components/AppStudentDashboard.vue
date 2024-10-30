@@ -105,7 +105,6 @@ export default {
       if (user) {
         const userCoursesRef = ref(database, 'booking');
 
-        // Удаляем курсы пользователя
         onValue(userCoursesRef, (snapshot) => {
           snapshot.forEach((childSnapshot) => {
             const courseData = childSnapshot.val();
