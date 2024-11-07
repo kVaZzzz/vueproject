@@ -53,7 +53,6 @@ export default {
       this.errorReview = '';
       this.successMessage = '';
 
-      // Валидация полей
       if (!this.formData.name) {
         this.errorName = 'Пожалуйста, введите ваше имя.';
         return;
@@ -74,9 +73,7 @@ export default {
         rating: this.formData.rating,
       })
         .then(() => {
-          // Успешная отправка отзыва
           this.successMessage = 'Ваш отзыв успешно отправлен!';
-          // Сброс данных формы
           this.formData.name = '';
           this.formData.review = '';
           this.formData.rating = 1;
