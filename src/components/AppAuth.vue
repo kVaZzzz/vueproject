@@ -74,6 +74,7 @@ export default {
   color: red;
   font-size: small;
 }
+
 .auth {
   max-width: 400px;
   margin: 50px auto;
@@ -94,10 +95,12 @@ export default {
   display: flex;
   flex-direction: column;
 }
-.reg{
+
+.reg {
   color: white;
   text-decoration: none;
 }
+
 .auth input {
   padding: 10px;
   margin-bottom: 15px;
@@ -128,11 +131,31 @@ export default {
 
 .auth p {
   text-align: center;
-  color: red; /* Цвет для сообщения об ошибке */
 }
 
 .auth a {
   display: block;
   text-align: center;
+}
+
+@media (max-width: 600px) {
+  .auth {
+    width: calc(100% - 40px);
+    padding: 15px;
+  }
+
+  .auth h2 {
+    font-size: 20px;
+  }
+
+  .auth input,
+  .auth button {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .auth button {
+    margin-bottom: 10px;
+  }
 }
 </style>

@@ -157,4 +157,27 @@ export default {
   font-size: small;
   margin-top: -10px;
 }
+
+/* Адаптивные стили */
+@media (max-width: 600px) {
+  .booking {
+    width: calc(100% - 40px);
+    padding: 15px;
+  }
+
+  .booking h2 {
+    font-size: 24px;
+  }
+
+  .booking select,
+  .booking input[type="date"],
+  .booking button {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .booking button {
+    margin-bottom: 10px;
+  }
+}
 </style>

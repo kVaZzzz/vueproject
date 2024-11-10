@@ -46,4 +46,22 @@ export default {
 .news h3 {
   margin: 0;
 }
+
+@media (max-width: 600px) {
+  .news {
+    padding: 15px;
+  }
+
+  .news h2 {
+    font-size: 24px;
+  }
+
+  .news h3 {
+    font-size: 20px;
+  }
+
+  .news li {
+    padding: 8px 0;
+  }
+}
 </style>

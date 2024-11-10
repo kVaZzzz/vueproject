@@ -97,7 +97,6 @@ nav a:hover {
 
 nav form {
   margin-left: 20px;
-  margin-top: -7px;
 }
 
 nav button {
@@ -123,5 +122,27 @@ nav button:hover {
 
 .intro p {
   font-size: 18px;
+}
+
+@media (max-width: 600px) {
+  nav {
+    flex-direction: column;
+    align-items: center;
+  }
+  nav form {
+    margin-left: 0px;
+  }
+  nav a,
+  nav button {
+    margin: 10px 0;
+  }
+
+  .intro h2 {
+    font-size: 22px;
+  }
+
+  .intro p {
+    font-size: 16px;
+  }
 }
 </style>

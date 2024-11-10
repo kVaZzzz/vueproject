@@ -152,7 +152,6 @@ export default {
 .error {
   color: red;
   font-size: small;
-  margin-top: -10px;
 }
 
 .success-message {
@@ -161,5 +160,20 @@ export default {
   background-color: #d4edda;
   color: #155724;
   border-radius: 4px;
+}
+
+@media (max-width: 600px) {
+
+  .review-form h3 {
+    font-size: 24px;
+  }
+
+  .review-form input[type="text"],
+  .review-form textarea,
+  .review-form select,
+  .review-form .button {
+    font-size: 14px;
+    padding: 8px;
+  }
 }
 </style>

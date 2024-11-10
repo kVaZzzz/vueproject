@@ -1,6 +1,7 @@
 <template>
   <div class="dashboard">
     <div class="change-password">
+      <h2>Личный кабинет студента</h2>
       <h3>Изменить пароль</h3>
       <input type="password" v-model="newPassword" placeholder="Новый пароль" required />
       <button @click="changePassword">Сменить пароль</button>
@@ -8,7 +9,6 @@
       <p v-if="successMessage">{{ successMessage }}</p>
     </div>
 
-    <h2>Личный кабинет студента</h2>
 
     <ul v-if="userCourses.length">
       <li v-for="(course, index) in userCourses" :key="index">
@@ -187,11 +187,11 @@ export default {
 }
 
 .dashboard p {
-  color: #d9534f;
+  color: #d9534f; /* Цвет для ошибок */
 }
 
 .dashboard p:nth-of-type(n+2) {
-  color: #5cb85c;
+  color: #5cb85c; /* Цвет для успешных сообщений */
 }
 
 .dashboard ul {
@@ -206,5 +206,26 @@ export default {
 
 .dashboard li:last-child {
   border-bottom: none;
+}
+
+@media (max-width: 600px) {
+  .dashboard {
+    padding: 15px;
+  }
+
+  .dashboard h2 {
+    font-size: 24px;
+  }
+
+  .change-password h3,
+  .delete-account h3 {
+    font-size: 20px;
+  }
+
+  .dashboard input[type="password"],
+  .dashboard button {
+    font-size: 14px;
+    padding: 8px;
+  }
 }
 </style>

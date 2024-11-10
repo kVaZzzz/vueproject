@@ -58,12 +58,12 @@ html, body {
   display: flex;
   justify-content: center;
 }
-.footer-nav a{
+
+.footer-nav a {
   margin-right: 15px;
   color: white;
   text-decoration: none;
 }
-
 
 .footer-nav router-link {
   color: white;
@@ -91,5 +91,20 @@ html, body {
 
 .social-media a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .footer-nav {
+    flex-direction: column;
+  }
+
+  .footer-nav a,
+  .footer-nav router-link {
+    margin-bottom: 10px;
+  }
+
+  .social-media a {
+    margin-bottom: 5px;
+  }
 }
 </style>

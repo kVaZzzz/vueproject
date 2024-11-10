@@ -32,10 +32,46 @@ export default {
 <style scoped>
 .courses {
   max-width: 600px;
-  margin:auto;
+  margin: auto;
+  padding: 20px;
 }
+
+.courses h2 {
+  font-size: 28px;
+  text-align: center;
+}
+
 .course {
-  border-bottom:1px solid #ccc;
-  padding-bottom:10px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.course h3 {
+  font-size: 24px;
+}
+
+.course p {
+  font-size: 16px;
+}
+
+/* Адаптивные стили */
+@media (max-width: 600px) {
+  .courses {
+    width: calc(100% - 40px);
+    padding: 15px;
+  }
+
+  .courses h2 {
+    font-size: 24px;
+  }
+
+  .course h3 {
+    font-size: 20px;
+  }
+
+  .course p {
+    font-size: 14px;
+  }
 }
 </style>

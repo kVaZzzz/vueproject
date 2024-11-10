@@ -143,4 +143,23 @@ export default {
 .review-list .liked {
   background-color: #28a745;
 }
+
+@media (max-width: 600px) {
+  .review-list {
+    padding: 15px;
+  }
+
+  .review-list strong {
+    font-size: 16px;
+  }
+
+  .review-list p {
+    font-size: 14px;
+  }
+
+  .review-list button {
+    padding: 6px;
+    font-size: 14px;
+  }
+}
 </style>

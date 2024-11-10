@@ -136,4 +136,17 @@ export default {
   color: red;
   font-size: small;
 }
+
+@media (max-width: 600px) {
+  .wrap.registration {
+    width: calc(100% - 40px);
+    padding: 15px;
+  }
+
+  .wrap.registration input,
+  .wrap.registration button {
+    font-size: 14px;
+    padding: 8px;
+  }
+}
 </style>
