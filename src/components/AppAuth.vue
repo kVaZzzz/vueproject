@@ -12,60 +12,74 @@
     <p v-if="errorUser">{{ errorUser }}</p>
   </div>
 </template>
-<script>
-import { reactive, ref } from 'vue';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { apps } from "@/main.js";
-import { useUserStore } from "@/stores/counter.js";
-import router from "@/router/index.js";
 
-export default {
-  setup() {
-    const userStore = useUserStore();
-    const formData = reactive({
-      email: '',
-      password: '',
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/userStore';
+
+const formData = ref({
+  email: '',
+  password: '',
+});
+const errorUser = ref('');
+const emailError = ref('');
+const passwordError = ref('');
+const router = useRouter();
+const userStore = useUserStore();
+
+const validateEmail = (email) => {
+  const re = /^[A-z0-9._%+-]+@[A-z0-9.-]+\.[A-z]{2,}$/;
+  return re.test(email);
+};
+
+const handleSubmit = async () => {
+  emailError.value = '';
+  passwordError.value = '';
+
+  if (!validateEmail(formData.value.email)) {
+    emailError.value = 'Введите корректный email.';
+    return;
+  }
+
+  if (formData.value.password.length < 6) {
+    passwordError.value = 'Пароль должен содержать минимум 6 символов.';
+    return;
+  }
+
+  try {
+    const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyB9Cx6vMAu9DgAY4Ey2R199ZEc-IjXeQGM`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: formData.value.email,
+        password: formData.value.password,
+        returnSecureToken: true,
+      }),
     });
-    const errorUser = ref('');
-    const emailError = ref('');
-    const passwordError = ref('');
 
-    const validateEmail = (email) => {
-      const re = /^[A-z0-9._%+-]+@[A-z0-9.-]+\.[A-z]{2,}$/;
-      return re.test(email);
-    };
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message);
+    }
 
-    const handleSubmit = () => {
-
-      emailError.value = '';
-      passwordError.value = '';
-
-
-      if (!validateEmail(formData.email)) {
-        emailError.value = 'Введите корректный email. Пример: user@example.com';
-        return;
-      }
-
-      if (formData.password.length < 6) {
-        passwordError.value = 'Пароль должен содержать минимум 6 символов.';
-        return;
-      }
-
-      const userAuth = getAuth(apps);
-      signInWithEmailAndPassword(userAuth, formData.email, formData.password)
-        .then((res) => {
-          const userData = res.user;
-          localStorage.setItem('user', JSON.stringify(userData));
-          userStore.setUser(userData);
-          router.push('/dashboard');
-        })
-        .catch((error) => {
-          errorUser.value = error.message;
-        });
-    };
-
-    return { formData, errorUser, emailError, passwordError, handleSubmit };
-  },
+    const data = await response.json();
+    userStore.setUser(data);
+    router.push('/dashboard');
+  } catch (error) {
+    if (error.message.includes('EMAIL_NOT_FOUND')) {
+      emailError.value = 'Пользователь с таким email не найден.';
+      errorUser.value = '';
+    } else if (error.message.includes('INVALID_PASSWORD')) {
+      passwordError.value = 'Неверный пароль.';
+      errorUser.value = '';
+    } else {
+      errorUser.value = 'Ошибка при авторизации: ' + error.message;
+      console.error('Ошибка:', error.message);
+    }
+  }
 };
 </script>
 

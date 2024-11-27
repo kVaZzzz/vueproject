@@ -19,78 +19,78 @@
   </div>
 </template>
 
-<script>
-import { getAuth } from 'firebase/auth';
-import { ref, set } from 'firebase/database';
-import { database } from "@/main.js";
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useUserStore } from '@/stores/userStore';
 
-export default {
-  data() {
-    return {
-      selectedCourse: '',
-      startDate: '',
-      successMessage: '',
-      errorMessage: '',
-      courses: {
-        1: 'Категория В',
-        2: 'Категория С'
+const selectedCourse = ref('');
+const startDate = ref('');
+const successMessage = ref('');
+const errorMessage = ref('');
+const courses = ref({
+  1: 'Категория В',
+  2: 'Категория С'
+});
+const currentUserId = ref(null);
+const userStore = useUserStore();
+
+onMounted(() => {
+  currentUserId.value = userStore.user?.localId;
+});
+
+const handleBooking = async () => {
+  errorMessage.value = '';
+
+  if (!selectedCourse.value || !startDate.value) {
+    errorMessage.value = 'Пожалуйста, выберите курс и дату.';
+    return;
+  }
+
+  const selectedDate = new Date(startDate.value);
+  const currentDate = new Date();
+
+  if (selectedDate <= currentDate) {
+    errorMessage.value = 'Дата начала должна быть в будущем.';
+    return;
+  }
+
+  const bookingData = {
+    userId: currentUserId.value,
+    course: courses.value[selectedCourse.value],
+    startDate: startDate.value,
+  };
+
+  try {
+    const response = await fetch(`https://firestore.googleapis.com/v1/projects/autoschool-1bc84/databases/(default)/documents/bookings?documentId=${Date.now()}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userStore.user?.idToken}`,
       },
-      currentUserId: null,
-    };
-  },
+      body: JSON.stringify({
+        fields: {
+          userId: { stringValue: bookingData.userId },
+          course: { stringValue: bookingData.course },
+          startDate: { stringValue: bookingData.startDate },
+        },
+      }),
+    });
 
-  mounted() {
-    const userAuth = getAuth();
-    const user = userAuth.currentUser;
-
-    if (user) {
-      this.currentUserId = user.uid;
-      console.log('Текущий ID пользователя:', this.currentUserId);
-    } else {
-      console.error('Пользователь не аутентифицирован.');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message);
     }
-  },
 
-  methods: {
-    handleBooking() {
-      this.errorMessage = '';
+    successMessage.value = `Вы успешно записаны на курс "${bookingData.course}" с датой начала ${bookingData.startDate}.`;
+    selectedCourse.value = '';
+    startDate.value = '';
 
-      if (!this.selectedCourse || !this.startDate) {
-        this.errorMessage = 'Пожалуйста, выберите курс и дату.';
-        return;
-      }
-
-      const selectedDate = new Date(this.startDate);
-      const currentDate = new Date();
-
-      if (selectedDate <= currentDate) {
-        this.errorMessage = 'Дата начала должна быть в будущем.';
-        return;
-      }
-
-      const bookingData = {
-        userId: this.currentUserId,
-        course: this.courses[this.selectedCourse],
-        startDate: this.startDate,
-      };
-
-      const firebaseRef = ref(database, 'booking/' + Date.now());
-
-      set(firebaseRef, bookingData)
-        .then(() => {
-          this.successMessage = `Вы успешно записаны на курс "${bookingData.course}" с датой начала ${bookingData.startDate}.`;
-          this.selectedCourse = '';
-          this.startDate = '';
-
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 5000);
-        })
-        .catch((error) => {
-          console.error('Ошибка записи в Firebase:', error);
-          this.errorMessage = 'Произошла ошибка при записи. Пожалуйста, попробуйте еще раз.';
-        });
-    },
+    setTimeout(() => {
+      successMessage.value = '';
+    }, 5000);
+  } catch (error) {
+    console.error('Ошибка записи в Firebase:', error);
+    errorMessage.value = 'Произошла ошибка при записи. Пожалуйста, попробуйте еще раз.';
   }
 };
 </script>

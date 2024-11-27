@@ -26,36 +26,23 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { computed, onMounted } from 'vue';
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import { useUserStore } from "@/stores/userStore";
+import { useUserStore } from '@/stores/userStore';
+import { useRouter } from 'vue-router';
 
-export default {
-  setup() {
-    const userStore = useUserStore();
+const userStore = useUserStore();
+const router = useRouter();
 
-    const isAuth = computed(() => userStore.isAuthenticated);
+const isAuth = computed(() => userStore.isAuthenticated);
 
-    onMounted(() => {
-      const auth = getAuth();
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          userStore.setUser(user);
-        } else {
-          userStore.clearUser();
-        }
-      });
-    });
+onMounted(() => {
+  userStore.checkAuthState();
+});
 
-    const logout = async () => {
-      const auth = getAuth();
-      await signOut(auth);
-      userStore.clearUser();
-    };
-
-    return { isAuth, logout };
-  },
+const logout = async () => {
+  userStore.logout();
+  router.push('/auth');
 };
 </script>
 
@@ -89,6 +76,7 @@ nav a {
   color: white;
   text-decoration: none;
   margin: 0 15px;
+  margin-top: 6px;
 }
 
 nav a:hover {

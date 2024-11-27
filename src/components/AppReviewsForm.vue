@@ -30,66 +30,72 @@
     </form>
   </section>
 </template>
-<script>
-import { getDatabase, set, ref, push } from "firebase/database";
-import { database } from "@/main.js";
 
-export default {
-  data() {
-    return {
-      formData: {
-        name: '',
-        review: '',
-        rating: 1,
-      },
-      errorName: '',
-      errorReview: '',
-      successMessage: '',
-    };
-  },
-  methods: {
-    onSubmit() {
-      this.errorName = '';
-      this.errorReview = '';
-      this.successMessage = '';
+<script setup>
+import { ref } from 'vue';
+import { useUserStore } from '@/stores/userStore';
 
-      if (!this.formData.name) {
-        this.errorName = 'Пожалуйста, введите ваше имя.';
-        return;
-      }
+const formData = ref({
+  name: '',
+  review: '',
+  rating: 1,
+});
+const errorName = ref('');
+const errorReview = ref('');
+const successMessage = ref('');
+const userStore = useUserStore();
 
-      if (!this.formData.review) {
-        this.errorReview = 'Пожалуйста, напишите ваш отзыв.';
-        return;
-      }
+const onSubmit = async () => {
+  errorName.value = '';
+  errorReview.value = '';
+  successMessage.value = '';
 
-      const db = database;
-      const Review = ref(db, "reviews");
-      const newReview = push(Review);
-
-      set(newReview, {
-        name: this.formData.name,
-        review: this.formData.review,
-        rating: this.formData.rating,
-      })
-        .then(() => {
-          this.successMessage = 'Ваш отзыв успешно отправлен!';
-          this.formData.name = '';
-          this.formData.review = '';
-          this.formData.rating = 1;
-
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 5000);
-        })
-        .catch((error) => {
-          console.error('Ошибка при отправке отзыва:', error);
-          this.errorReview = 'Произошла ошибка при отправке отзыва. Пожалуйста, попробуйте еще раз.';
-        });
-    }
+  if (!formData.value.name) {
+    errorName.value = 'Пожалуйста, введите ваше имя.';
+    return;
   }
-}
+
+  if (!formData.value.review) {
+    errorReview.value = 'Пожалуйста, напишите ваш отзыв.';
+    return;
+  }
+
+  try {
+    const response = await fetch(`https://firestore.googleapis.com/v1/projects/autoschool-1bc84/databases/(default)/documents/reviews?documentId=${Date.now()}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userStore.user?.idToken}`,
+      },
+      body: JSON.stringify({
+        fields: {
+          name: { stringValue: formData.value.name },
+          review: { stringValue: formData.value.review },
+          rating: { integerValue: formData.value.rating },
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message);
+    }
+
+    successMessage.value = 'Ваш отзыв успешно отправлен!';
+    formData.value.name = '';
+    formData.value.review = '';
+    formData.value.rating = 1;
+
+    setTimeout(() => {
+      successMessage.value = '';
+    }, 5000);
+  } catch (error) {
+    console.error('Ошибка при отправке отзыва:', error);
+    errorReview.value = 'Произошла ошибка при отправке отзыва. Пожалуйста, попробуйте еще раз.';
+  }
+};
 </script>
+
 <style scoped>
 .review-form {
   max-width: 600px;

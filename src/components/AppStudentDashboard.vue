@@ -9,10 +9,9 @@
       <p v-if="successMessage">{{ successMessage }}</p>
     </div>
 
-
     <ul v-if="userCourses.length">
       <li v-for="(course, index) in userCourses" :key="index">
-        {{ course.course }} - Дата начала: {{ course.startDate }}
+        {{ course.course.stringValue }} - Дата начала: {{ course.startDate.stringValue }}
       </li>
     </ul>
     <p v-else-if="noCoursesFound">Нет записанных курсов.</p>
@@ -26,108 +25,118 @@
   </div>
 </template>
 
-<script>
-import { getAuth, updatePassword, deleteUser } from 'firebase/auth';
-import { getDatabase, ref, onValue, remove } from 'firebase/database';
-import { database } from "@/main.js";
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useUserStore } from '@/stores/userStore';
+import { useRouter } from 'vue-router';
 
-export default {
-  data() {
-    return {
-      userCourses: [],
-      newPassword: '',
-      errorUser: '',
-      successMessage: '',
-      noCoursesFound: false,
-      deleteError: '',
-      deleteSuccess: '',
-      currentUserId: null,
-    };
-  },
+const newPassword = ref('');
+const errorUser = ref('');
+const successMessage = ref('');
+const userCourses = ref([]);
+const noCoursesFound = ref(false);
+const deleteError = ref('');
+const deleteSuccess = ref('');
+const userStore = useUserStore();
+const router = useRouter();
 
-  created() {
-    this.fetchUserCourses();
-    const userAuth = getAuth();
-    const user = userAuth.currentUser;
+onMounted(async () => {
+  await fetchUserCourses();
+});
 
-    if (user) {
-      this.currentUserId = user.uid;
-      console.log('Текущий ID пользователя:', this.currentUserId);
-    } else {
-      console.error('Пользователь не аутентифицирован.');
+const fetchUserCourses = async () => {
+  if (!userStore.user?.idToken) {
+    console.error('Токен пользователя отсутствует или недействителен.');
+    router.push('/auth');
+    return;
+  }
+
+  try {
+    const response = await fetch(`https://firestore.googleapis.com/v1/projects/autoschool-1bc84/databases/(default)/documents/bookings`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${userStore.user?.idToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message);
     }
-  },
 
-  methods: {
-    fetchUserCourses() {
-      const firebaseRef = ref(database, 'booking');
+    const data = await response.json();
+    userCourses.value = data.documents.filter(doc => doc.fields.userId.stringValue === userStore.user?.localId).map(doc => doc.fields);
+    noCoursesFound.value = userCourses.value.length === 0;
+  } catch (error) {
+    console.error('Ошибка при получении данных о курсах:', error);
+  }
+};
 
-      onValue(firebaseRef, (snapshot) => {
-        const coursesArray = [];
-        snapshot.forEach((childSnapshot) => {
-          const courseData = childSnapshot.val();
-          if (courseData.userId === this.currentUserId) {
-            coursesArray.push(courseData);
-          }
-        });
-        console.log('Полученные курсы:', coursesArray);
-        this.userCourses = coursesArray;
-        this.noCoursesFound = coursesArray.length === 0;
-      }, {
-        onlyOnce: true
-      });
-    },
+const changePassword = async () => {
+  if (!userStore.user?.idToken) {
+    console.error('Токен пользователя отсутствует или недействителен.');
+    router.push('/auth');
+    return;
+  }
 
-    changePassword() {
-      const userAuth = getAuth();
-      const user = userAuth.currentUser;
+  try {
+    const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:update?key=AIzaSyB9Cx6vMAu9DgAY4Ey2R199ZEc-IjXeQGM`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        idToken: userStore.user?.idToken,
+        password: newPassword.value,
+        returnSecureToken: true,
+      }),
+    });
 
-      if (user) {
-        updatePassword(user, this.newPassword)
-          .then(() => {
-            this.successMessage = 'Пароль успешно изменен.';
-            this.newPassword = '';
-            this.errorUser = '';
-          })
-          .catch((error) => {
-            this.errorUser = error.message;
-            this.successMessage = '';
-          });
-      } else {
-        this.errorUser = 'Пользователь не аутентифицирован.';
-      }
-    },
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message);
+    }
 
-    deleteAccount() {
-      const userAuth = getAuth();
-      const user = userAuth.currentUser;
+    successMessage.value = 'Пароль успешно изменен.';
+    newPassword.value = '';
+    errorUser.value = '';
+  } catch (error) {
+    errorUser.value = error.message;
+    successMessage.value = '';
+  }
+};
 
-      if (user) {
-        const userCoursesRef = ref(database, 'booking');
+const deleteAccount = async () => {
+  if (!userStore.user?.idToken) {
+    console.error('Токен пользователя отсутствует или недействителен.');
+    router.push('/auth');
+    return;
+  }
 
-        onValue(userCoursesRef, (snapshot) => {
-          snapshot.forEach((childSnapshot) => {
-            const courseData = childSnapshot.val();
-            if (courseData.userId === user.uid) {
-              remove(ref(database, `booking/${childSnapshot.key}`));
-            }
-          });
-        });
+  try {
+    const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:delete?key=AIzaSyB9Cx6vMAu9DgAY4Ey2R199ZEc-IjXeQGM`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        idToken: userStore.user?.idToken,
+      }),
+    });
 
-        deleteUser(user)
-          .then(() => {
-            this.deleteSuccess = 'Аккаунт успешно удален.';
-            this.deleteError = '';
-          })
-          .catch((error) => {
-            this.deleteError = error.message;
-            this.deleteSuccess = '';
-          });
-      } else {
-        this.deleteError = 'Пользователь не аутентифицирован.';
-      }
-    },
-  },
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message);
+    }
+
+    deleteSuccess.value = 'Аккаунт успешно удален.';
+    deleteError.value = '';
+    userStore.logout();
+    router.push('/auth');
+  } catch (error) {
+    deleteError.value = error.message;
+    deleteSuccess.value = '';
+  }
 };
 </script>
 

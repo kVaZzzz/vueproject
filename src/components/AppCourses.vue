@@ -10,23 +10,28 @@
   </div>
 </template>
 
-<script>
-import { getDatabase, ref, onValue } from 'firebase/database';
+<script setup>
+import { ref, onMounted } from 'vue';
 
-export default {
-  data() {
-    return {
-      courses: [],
-    };
-  },
-  created() {
-    const db = getDatabase();
-    const coursesRef = ref(db, 'courses/');
-    onValue(coursesRef, (snapshot) => {
-      this.courses = snapshot.val() || [];
+const courses = ref([]);
+
+onMounted(async () => {
+  try {
+    const response = await fetch(`https://firestore.googleapis.com/v1/projects/autoschool-1bc84/databases/(default)/documents/courses`, {
+      method: 'GET',
     });
-  },
-};
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message);
+    }
+
+    const data = await response.json();
+    courses.value = data.documents.map(doc => doc.fields);
+  } catch (error) {
+    console.error('Ошибка при получении данных о курсах:', error);
+  }
+});
 </script>
 
 <style scoped>

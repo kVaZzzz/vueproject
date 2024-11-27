@@ -2,10 +2,10 @@
   <section class="review-list">
     <ul>
       <li v-for="(review, index) in reviews" :key="index">
-        <strong>{{ review.name }}</strong>
-        <p>{{ review.review }}</p>
-        <p>Рейтинг: {{ review.rating }}</p>
-        <p>Лайки: {{ review.likes || 0 }}</p>
+        <strong>{{ review.name?.stringValue || 'Без имени' }}</strong>
+        <p>{{ review.review?.stringValue || 'Без отзыва' }}</p>
+        <p>Рейтинг: {{ review.rating?.integerValue || 0 }}</p>
+        <p>Лайки: {{ review.likes?.integerValue || 0 }}</p>
         <button v-if="isAuthenticated" @click="toggleLike(review.id)" :class="{ liked: isLiked(review.id) }">
           {{ isLiked(review.id) ? 'Убрать лайк' : 'Лайк' }}
         </button>
@@ -14,84 +14,182 @@
     </ul>
   </section>
 </template>
-<script>
-import { getDatabase, ref, get, update, set } from "firebase/database";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { database } from "@/main.js";
 
-export default {
-  data() {
-    return {
-      reviews: [],
-      userId: null,
-      userLikes: new Set(),
-      isAuthenticated: false,
-    };
-  },
-  mounted() {
-    this.loadReviews();
-    this.checkAuthentication();
-  },
-  methods: {
-    checkAuthentication() {
-      const auth = getAuth();
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          this.userId = user.uid;
-          this.isAuthenticated = true;
-          this.loadUserLikes();
-        } else {
-          this.isAuthenticated = false;
-        }
-      });
-    },
-    loadReviews() {
-      const reviewRef = ref(database, 'review');
-      get(reviewRef).then(snapshot => {
-        if (snapshot.exists()) {
-          this.reviews = [];
-          snapshot.forEach(childSnapshot => {
-            const data = childSnapshot.val();
-            data.id = childSnapshot.key;
-            this.reviews.push(data);
-          });
-        } else {
-          console.log("Данные не найдены");
-        }
-      }).catch(error => {
-        console.error("Ошибка при получении данных из базы данных:", error);
-      });
-    },
-    loadUserLikes() {
-      const userLikesRef = ref(database, `userLikes/${this.userId}`);
-      get(userLikesRef).then(snapshot => {
-        if (snapshot.exists()) {
-          this.userLikes = new Set(snapshot.val().likes || []);
-        }
-      }).catch(error => {
-        console.error("Ошибка при получении лайков пользователя:", error);
-      });
-    },
-    toggleLike(reviewId) {
-      const reviewRef = ref(database, `review/${reviewId}`);
-      const userLikesRef = ref(database, `userLikes/${this.userId}`);
-      if (this.userLikes.has(reviewId)) {
-        update(reviewRef, { likes: (this.reviews.find(review => review.id === reviewId).likes || 0) - 1 });
-        this.userLikes.delete(reviewId);
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useUserStore } from '@/stores/userStore';
+import { useRouter } from 'vue-router';
+
+const reviews = ref([]);
+const userLikes = ref(new Set());
+const isAuthenticated = ref(false);
+const userStore = useUserStore();
+const router = useRouter();
+
+onMounted(async () => {
+  await loadReviews();
+  await checkAuthentication();
+});
+
+const loadReviews = async () => {
+  try {
+    const response = await fetch(`https://firestore.googleapis.com/v1/projects/autoschool-1bc84/databases/(default)/documents/reviews`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message);
+    }
+
+    const data = await response.json();
+    if (data.documents) {
+      reviews.value = data.documents.map(doc => ({ id: doc.name.split('/').pop(), ...doc.fields }));
+    } else {
+      reviews.value = [];
+    }
+  } catch (error) {
+    console.error('Ошибка при получении данных из базы данных:', error);
+  }
+};
+
+const checkAuthentication = async () => {
+  isAuthenticated.value = userStore.isAuthenticated;
+  if (isAuthenticated.value) {
+    await loadUserLikes();
+  }
+};
+
+const loadUserLikes = async () => {
+  if (!userStore.user?.idToken) {
+    console.error('Токен пользователя отсутствует или недействителен.');
+    router.push('/auth');
+    return;
+  }
+
+  try {
+    const response = await fetch(`https://firestore.googleapis.com/v1/projects/autoschool-1bc84/databases/(default)/documents/userLikes/${userStore.user?.localId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${userStore.user?.idToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        // Если документ не найден, создаем его
+        await createUserLikesDocument();
       } else {
-        update(reviewRef, { likes: (this.reviews.find(review => review.id === reviewId).likes || 0) + 1 });
-        this.userLikes.add(reviewId);
+        const errorData = await response.json();
+        throw new Error(errorData.error.message);
       }
-      set(userLikesRef, { likes: Array.from(this.userLikes) });
+    } else {
+      const data = await response.json();
+      if (data.fields && data.fields.likes && data.fields.likes.arrayValue && data.fields.likes.arrayValue.values) {
+        userLikes.value = new Set(data.fields.likes.arrayValue.values.map(value => value.stringValue));
+      }
+    }
+  } catch (error) {
+    console.error('Ошибка при получении лайков пользователя:', error);
+  }
+};
 
-      // Обновляем локальное состояние
-      const currentLikes = this.reviews.find(review => review.id === reviewId).likes || 0;
-      this.reviews.find(review => review.id === reviewId).likes = this.userLikes.has(reviewId) ? currentLikes + 1 : currentLikes - 1;
-    },
-    isLiked(reviewId) {
-      return this.userLikes.has(reviewId);
-    },
-  },
+const createUserLikesDocument = async () => {
+  if (!userStore.user?.idToken) {
+    console.error('Токен пользователя отсутствует или недействителен.');
+    router.push('/auth');
+    return;
+  }
+
+  try {
+    const response = await fetch(`https://firestore.googleapis.com/v1/projects/autoschool-1bc84/databases/(default)/documents/userLikes/${userStore.user?.localId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userStore.user?.idToken}`,
+      },
+      body: JSON.stringify({
+        fields: {
+          likes: { arrayValue: { values: [] } },
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message);
+    }
+  } catch (error) {
+    console.error('Ошибка при создании документа userLikes:', error);
+  }
+};
+
+const toggleLike = async (reviewId) => {
+  if (!userStore.user?.idToken) {
+    console.error('Токен пользователя отсутствует или недействителен.');
+    router.push('/auth');
+    return;
+  }
+
+  try {
+    const reviewRef = `https://firestore.googleapis.com/v1/projects/autoschool-1bc84/databases/(default)/documents/reviews/${reviewId}`;
+    const userLikesRef = `https://firestore.googleapis.com/v1/projects/autoschool-1bc84/databases/(default)/documents/userLikes/${userStore.user?.localId}`;
+
+    const review = reviews.value.find(review => review.id === reviewId);
+    const currentLikes = review.likes?.integerValue || 0;
+
+    if (userLikes.value.has(reviewId)) {
+      userLikes.value.delete(reviewId);
+      await fetch(reviewRef, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userStore.user?.idToken}`,
+        },
+        body: JSON.stringify({
+          fields: {
+            likes: { integerValue: currentLikes - 1 },
+          },
+        }),
+      });
+    } else {
+      userLikes.value.add(reviewId);
+      await fetch(reviewRef, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userStore.user?.idToken}`,
+        },
+        body: JSON.stringify({
+          fields: {
+            likes: { integerValue: currentLikes + 1 },
+          },
+        }),
+      });
+    }
+
+    await fetch(userLikesRef, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userStore.user?.idToken}`,
+      },
+      body: JSON.stringify({
+        fields: {
+          likes: { arrayValue: { values: Array.from(userLikes.value).map(id => ({ stringValue: id })) } },
+        },
+      }),
+    });
+
+    // Обновляем локальное состояние
+    review.likes = { integerValue: userLikes.value.has(reviewId) ? currentLikes + 1 : currentLikes - 1 };
+  } catch (error) {
+    console.error('Ошибка при обновлении лайков:', error);
+  }
+};
+
+const isLiked = (reviewId) => {
+  return userLikes.value.has(reviewId);
 };
 </script>
 

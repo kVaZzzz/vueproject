@@ -5,7 +5,7 @@
       <input
         type="email"
         name="email"
-        placeholder="email"
+        placeholder="Email"
         v-model="formData.email"
         required
       />
@@ -13,81 +13,81 @@
       <input
         type="password"
         name="password"
-        placeholder="password"
+        placeholder="Пароль"
         v-model="formData.password"
         required
       />
       <p v-if="errorPassword" class="error">{{ errorPassword }}</p>
       <button type="submit">Зарегистрироваться</button>
     </form>
+    <p v-if="errorUser" class="error">{{ errorUser }}</p>
   </section>
 </template>
 
-<script>
-import { apps } from "../main.js";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { storeToRefs } from "pinia";
-import { useUserStore } from "../stores/counter.js";
-import router from "@/router/index.js";
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/userStore';
 
-export default {
-  data() {
-    return {
-      errorUser: '',
-      errorEmail: '',
-      errorPassword: '',
-      formData: {
-        email: '',
-        password: '',
+const errorUser = ref('');
+const errorEmail = ref('');
+const errorPassword = ref('');
+const formData = ref({
+  email: '',
+  password: '',
+});
+const router = useRouter();
+const userStore = useUserStore();
+
+const validateEmail = (email) => {
+  const re = /^[A-z0-9._%+-]+@[A-z0-9.-]+\.[A-z]{2,}$/;
+  return re.test(email);
+};
+
+const handleSubmit = async () => {
+  errorEmail.value = '';
+  errorPassword.value = '';
+
+  if (!validateEmail(formData.value.email)) {
+    errorEmail.value = 'Введите корректный email. Пример: user@example.com';
+    return;
+  }
+
+  if (formData.value.password.length < 6) {
+    errorPassword.value = 'Пароль должен содержать минимум 6 символов.';
+    return;
+  }
+
+  try {
+    const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyB9Cx6vMAu9DgAY4Ey2R199ZEc-IjXeQGM`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    };
-  },
-  setup() {
-    const userStore = storeToRefs(useUserStore());
-    const { user } = userStore;
+      body: JSON.stringify({
+        email: formData.value.email,
+        password: formData.value.password,
+        returnSecureToken: true,
+      }),
+    });
 
-    return {
-      user,
-    };
-  },
-  methods: {
-    validateEmail(email) {
-      const re = /^[A-z0-9._%+-]+@[A-z0-9.-]+\.[A-z]{2,}$/;
-      return re.test(email);
-    },
-    async handleSubmit() {
-      this.errorEmail = '';
-      this.errorPassword = '';
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message);
+    }
 
-      if (!this.validateEmail(this.formData.email)) {
-        this.errorEmail = 'Введите корректный email. Пример: user@example.com';
-        return;
-      }
-
-      if (this.formData.password.length < 6) {
-        this.errorPassword = 'Пароль должен содержать минимум 6 символов.';
-        return;
-      }
-
-      try {
-        const userAuth = getAuth(apps);
-        const userCredential = await createUserWithEmailAndPassword(userAuth, this.formData.email, this.formData.password);
-        const userData = userCredential.user;
-        localStorage.setItem('userUID', userData.uid);
-        this.user = userData;
-        console.log(userData);
-        router.push('/auth');
-      } catch (error) {
-        if (error.code === 'auth/email-already-in-use') {
-          this.errorEmail = 'Этот email уже зарегистрирован.';
-          this.errorUser = '';
-        } else {
-          this.errorUser = error.message; // Обработка других ошибок
-          console.error('Error:', error.message, error.code);
-        }
-      }
-    },
-  },
+    const data = await response.json();
+    userStore.setUser(data);
+    router.push('/auth');
+  } catch (error) {
+    if (error.message.includes('EMAIL_EXISTS')) {
+      errorEmail.value = 'Этот email уже зарегистрирован.';
+      errorUser.value = '';
+    } else {
+      errorUser.value = error.message;
+      console.error('Ошибка:', error.message);
+    }
+  }
 };
 </script>
 
